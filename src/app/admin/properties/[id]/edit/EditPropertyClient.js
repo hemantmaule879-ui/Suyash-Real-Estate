@@ -57,7 +57,7 @@ export default function EditPropertyClient({ property }) {
 
       <div className="admin-card">
         <form onSubmit={handleSubmit} encType="multipart/form-data">
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+          <div className="form-grid">
             
             {/* Title */}
             <div className="form-group" style={{ gridColumn: "span 2" }}>

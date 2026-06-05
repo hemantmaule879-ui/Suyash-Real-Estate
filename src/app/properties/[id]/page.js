@@ -87,7 +87,7 @@ export default async function PropertyDetailsPage({ params }) {
       </div>
 
       <section className="section">
-        <div className="container" style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: "40px", alignItems: "start" }}>
+        <div className="container details-grid">
           
           {/* Main Details (Left Column) */}
           <div>
@@ -112,17 +112,7 @@ export default async function PropertyDetailsPage({ params }) {
               </div>
 
               {/* Stats Grid */}
-              <div style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(4, 1fr)",
-                gap: "16px",
-                backgroundColor: "var(--color-bg-light)",
-                borderRadius: "var(--radius-lg)",
-                padding: "24px",
-                marginBottom: "40px",
-                border: "1px solid var(--color-border)",
-                textAlign: "center"
-              }}>
+              <div className="stats-grid">
                 <div>
                   <span style={{ fontSize: "24px", display: "block", marginBottom: "4px" }}>📏</span>
                   <span style={{ fontSize: "12px", color: "var(--color-text-muted)", textTransform: "uppercase", display: "block" }}>Area</span>

@@ -23,7 +23,7 @@ export default function AboutPage() {
       {/* Main Info Section */}
       <section className="section">
         <div className="container">
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "60px", alignItems: "center" }}>
+          <div className="about-grid">
             {/* Left Column Text */}
             <div>
               <span className="section-subtitle" style={{ textAlign: "left" }}>Our Legacy</span>

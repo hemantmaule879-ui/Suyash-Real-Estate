@@ -22,7 +22,7 @@ export default function ContactPage() {
       </div>
 
       <section className="section">
-        <div className="container" style={{ display: "grid", gridTemplateColumns: "1fr 1.2fr", gap: "60px", alignItems: "start" }}>
+        <div className="container contact-page-grid">
           
           {/* Left Column (Contact details) */}
           <div>

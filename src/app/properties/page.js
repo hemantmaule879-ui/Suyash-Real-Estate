@@ -99,7 +99,7 @@ export default async function PropertiesPage({ searchParams }) {
 
       {/* Main Grid Section */}
       <section className="section">
-        <div className="container" style={{ display: "grid", gridTemplateColumns: "280px 1fr", gap: "40px", alignItems: "start" }}>
+        <div className="container search-page-grid">
           {/* Sidebar Filter */}
           <aside style={{
             backgroundColor: "#fff",
