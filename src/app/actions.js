@@ -1,7 +1,13 @@
 "use server";
 
-import fs from 'fs';
 import path from 'path';
+
+let fs = null;
+try {
+  fs = eval("require('fs')");
+} catch (e) {
+  // fs is not available (e.g. Cloudflare Workers environment)
+}
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 import { propertiesDb, leadsDb, adminDb } from '@/lib/db';
@@ -54,8 +60,16 @@ async function saveUploadedFiles(files) {
   const savedPaths = [];
   const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
 
-  if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
+  let useFs = false;
+  if (fs) {
+    try {
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+      useFs = true;
+    } catch (e) {
+      useFs = false;
+    }
   }
 
   for (const file of files) {
@@ -63,13 +77,20 @@ async function saveUploadedFiles(files) {
       try {
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
-        // Make filename unique and safe
-        const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
-        const uniqueName = `${Date.now()}_${cleanName}`;
-        const filePath = path.join(uploadsDir, uniqueName);
         
-        fs.writeFileSync(filePath, buffer);
-        savedPaths.push(`/uploads/${uniqueName}`);
+        if (useFs) {
+          // Local Node.js environment: write file to disk
+          const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
+          const uniqueName = `${Date.now()}_${cleanName}`;
+          const filePath = path.join(uploadsDir, uniqueName);
+          fs.writeFileSync(filePath, buffer);
+          savedPaths.push(`/uploads/${uniqueName}`);
+        } else {
+          // Cloudflare Workers environment: fallback to base64 Data URL
+          const base64String = buffer.toString('base64');
+          const mimeType = file.type || 'image/jpeg';
+          savedPaths.push(`data:${mimeType};base64,${base64String}`);
+        }
       } catch (err) {
         console.error("Failed to save file:", file.name, err);
       }

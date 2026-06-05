@@ -1,6 +1,12 @@
-import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
+
+let fs = null;
+try {
+  fs = eval("require('fs')");
+} catch (e) {
+  // fs is not available (e.g. Cloudflare Workers environment)
+}
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 const DB_PATH = path.join(DATA_DIR, 'db.json');
@@ -136,34 +142,57 @@ const INITIAL_DATA = {
   adminPasswordHash: DEFAULT_ADMIN_HASH
 };
 
+// Global in-memory database cache fallback
+let memoryDb = null;
+
 function initDb() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
-  if (!fs.existsSync(DB_PATH)) {
-    fs.writeFileSync(DB_PATH, JSON.stringify(INITIAL_DATA, null, 2), 'utf-8');
+  if (!fs) return false;
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    if (!fs.existsSync(DB_PATH)) {
+      fs.writeFileSync(DB_PATH, JSON.stringify(INITIAL_DATA, null, 2), 'utf-8');
+    }
+    return true;
+  } catch (error) {
+    return false;
   }
 }
 
 export function readDb() {
-  initDb();
+  const isFsWorking = initDb();
+  if (!isFsWorking) {
+    if (!memoryDb) {
+      memoryDb = JSON.parse(JSON.stringify(INITIAL_DATA));
+    }
+    return memoryDb;
+  }
   try {
     const data = fs.readFileSync(DB_PATH, 'utf-8');
     return JSON.parse(data);
   } catch (error) {
     console.error("Failed to read database:", error);
-    return INITIAL_DATA;
+    if (!memoryDb) {
+      memoryDb = JSON.parse(JSON.stringify(INITIAL_DATA));
+    }
+    return memoryDb;
   }
 }
 
 export function writeDb(data) {
-  initDb();
+  const isFsWorking = initDb();
+  if (!isFsWorking) {
+    memoryDb = data;
+    return true;
+  }
   try {
     fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), 'utf-8');
     return true;
   } catch (error) {
     console.error("Failed to write database:", error);
-    return false;
+    memoryDb = data;
+    return true;
   }
 }
 
